@@ -91,6 +91,9 @@ public class Login extends Fragment {
 
                 if (!token.equals("")) {
                     Toast.makeText(getActivity(), "Đăng nhập thành công", Toast.LENGTH_SHORT).show();
+                    ProfileFragment profileFragment = new ProfileFragment();
+                    getFragmentManager().beginTransaction().replace(R.id.container, profileFragment).commit();
+
                 } else {
                     Toast.makeText(getActivity(), "Tài khoản hoặc mật khẩu không chính xác", Toast.LENGTH_SHORT).show();
                 }

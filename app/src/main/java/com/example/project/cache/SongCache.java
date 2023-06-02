@@ -10,7 +10,7 @@ import org.json.JSONException;
 
 public class SongCache {
     public static JSONArray getAllMusic(Context context) throws JSONException {
-        SharedPreferences sharedPreferences = context.getSharedPreferences("Historyaaa", context.MODE_PRIVATE);
+        SharedPreferences sharedPreferences = context.getSharedPreferences("Songssss", context.MODE_PRIVATE);
         String jsonArrayString = sharedPreferences.getString("songs", null);
         if(jsonArrayString!=null){
             JSONArray jsonArray = new JSONArray(jsonArrayString);
@@ -20,7 +20,7 @@ public class SongCache {
         return jsonArray;
     }
     public static void addMusic(Context context, String id) throws JSONException {
-        SharedPreferences sharedPreferences = context.getSharedPreferences("Historyaaa", context.MODE_PRIVATE);
+        SharedPreferences sharedPreferences = context.getSharedPreferences("Songssss", context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPreferences.edit();
         JSONArray jsonArray = getAllMusic(context);
         System.out.println(jsonArray);

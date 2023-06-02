@@ -4,7 +4,10 @@ import static android.content.ContentValues.TAG;
 
 import android.util.Log;
 
+import androidx.annotation.NonNull;
+
 import com.example.project.cache.CacheObject;
+import com.example.project.cache.UserCache;
 import com.example.project.event.CallbackAPI;
 import com.example.project.event.OnClickListener;
 import com.example.project.cache.CacheMemory;
@@ -31,15 +34,17 @@ import java.util.concurrent.TimeUnit;
 
 import okhttp3.Call;
 import okhttp3.Callback;
+import okhttp3.FormBody;
 import okhttp3.HttpUrl;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
+import okhttp3.RequestBody;
 import okhttp3.Response;
 
 public class SongAPI{
     private static OnClickListener o;
     private static ArrayList<Subject> rs = new ArrayList<>();
-    private static final String API_URL = "http://192.168.1.78:3008/api";
+    private static final String API_URL = "http://192.168.1.179:3008/api";
 
 
     private static final OkHttpClient client = new OkHttpClient().newBuilder()
@@ -131,7 +136,46 @@ public class SongAPI{
 
         return rs;
     }
+    public static ArrayList<Subject> getSongByUsername(String username ,CallbackAPI callbackAPI) throws IOException, JSONException {
+        HttpUrl.Builder httpBuilder = HttpUrl.parse(API_URL+"/get_song_by_username").newBuilder();
+        httpBuilder.addQueryParameter("username",username);
+        Request request = new Request.Builder()
+                .url(httpBuilder.build())
+                .build();
+        client.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                call.cancel();
+            }
 
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                String result = response.body().string();
+                System.out.println("createOrder: " + result);
+                JSONArray songs = null;
+                ArrayList<Subject> subjects = new ArrayList<>();
+                try {
+                    songs = new JSONArray(result);
+                    for (int i = 0; i < songs.length(); i++)
+                    {
+                        String id = songs.getJSONObject(i).getString("id");
+                        String title = songs.getJSONObject(i).getString("title");
+                        String artistsNames = songs.getJSONObject(i).getString("artistsNames");
+                        String img = songs.getJSONObject(i).getString("thumbnailM");
+                        String url = songs.getJSONObject(i).getString("linkStream");
+                        Subject subject = new Subject(id, title, artistsNames, img, url);
+                        subjects.add(subject);
+                    }
+
+                    callbackAPI.callback(subjects);
+                } catch (JSONException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        });
+
+        return rs;
+    }
     public static void getHome(CallbackAPI callback){
         CacheMemory cacheMemory = CacheMemory.getMemoryCache();
         String homeCache = cacheMemory.getDataFromCache("home");
@@ -226,6 +270,48 @@ public class SongAPI{
 
             }
         });
+    }
+    public static void getInfoSong(JSONArray subjects, CallbackAPI callbackAPI){
+        RequestBody requestBody = new FormBody.Builder()
+                .add("subjects", new Gson().toJson(subjects))
+                .build();
+        Request request = new Request.Builder()
+                .url(API_URL + "/get_all_info_history")
+                .post(requestBody)
+                .build();
+        client.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onFailure(@NonNull Call call, @NonNull IOException e) {
+                e.fillInStackTrace();
+            }
+            @Override
+            public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
+                String result = response.body().string();
+                ArrayList<Subject> listMusic = new ArrayList<>();
+                Log.e("result", result);
+                JSONArray songs= null;
+                try {
+                    songs = new JSONArray(result);
+                    for (int i = 0; i < songs.length(); i++)
+                    {
+                        String id = songs.getJSONObject(i).getString("id");
+                        String title = songs.getJSONObject(i).getString("title");
+                        String artistsNames = songs.getJSONObject(i).getString("artistsNames");
+                        String img = songs.getJSONObject(i).getString("thumbnailM");
+                        String url = songs.getJSONObject(i).getString("linkStream");
+                        Subject subject = new Subject(id, title, artistsNames, img, url);
+                        listMusic.add(subject);
+                    }
+                    callbackAPI.callback(listMusic);
+
+                } catch (JSONException e) {
+                    throw new RuntimeException(e);
+                }
+
+
+            }
+        });
+
     }
     public static Subject getInfoSong(String id) {
         final CountDownLatch latch = new CountDownLatch(1); // Khởi tạo CountDownLatch với giá trị ban đầu là 1

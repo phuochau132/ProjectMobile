@@ -16,6 +16,7 @@ import android.widget.Toast;
 
 import com.example.project.api.SongAPI;
 import com.example.project.cache.SongCache;
+import com.example.project.event.CallbackAPI;
 import com.example.project.event.OnClickListener;
 import com.example.project.R;
 import com.example.project.activity.PlaylistActivity;
@@ -52,27 +53,32 @@ public class HistoryFragment extends Fragment implements OnClickListener {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         view = inflater.inflate(R.layout.fragment_history, container, false);
+
+        Bundle bundle = getArguments();
+        listMusic  = (ArrayList<Subject>) bundle.getSerializable("listMusic");
         try {
             this.init();
         } catch (JSONException e) {
             throw new RuntimeException(e);
         }
-        this.setAdapterRecently();
-        this.setAdapterHistory();
         return view;
     }
     public void init() throws JSONException {
         homeRecycler = view.findViewById(R.id.homeRecycler);
         homeFavourites = view.findViewById(R.id.homeFavourites);
-        listMusic = new ArrayList<>();
-        this.initListMusic();
         System.out.println(R.id.linearLayout);
+        setAdapterRecently();
+        setAdapterHistory();
     }
 
     public void setAdapterRecently() {
         LinearLayoutManager layoutManager = new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false);
         homeRecycler.setLayoutManager(layoutManager);
         AdapterRecently adapterRecently = new AdapterRecently();
+        ArrayList<Subject> subjects =(ArrayList<Subject>) listMusic;
+        int count = subjects.size();
+        if(count > 10 )
+
         adapterRecently.setData(listMusic,this);
         homeRecycler.setAdapter(adapterRecently);
     }
@@ -84,18 +90,7 @@ public class HistoryFragment extends Fragment implements OnClickListener {
         homeFavourites.setAdapter(adapterFavourites);
     }
 
-    public void initListMusic() throws JSONException {
-        JSONArray data= SongCache.getAllMusic(getContext());
-        for (int i = 0; i <data.length(); i++) {
-            try {
-                String tmp = data.getString(i);
-                Subject song= SongAPI.getInfoSong(tmp);
-                listMusic.add(song);
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-        }
-    }
+
     @Override
     public void clickItem() {
 

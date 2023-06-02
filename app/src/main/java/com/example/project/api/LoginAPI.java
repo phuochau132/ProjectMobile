@@ -32,7 +32,7 @@ import okhttp3.RequestBody;
 import okhttp3.Response;
 
 public class LoginAPI {
-    private static final String API_URL = "http://192.168.1.78:3008/auth";
+    private static final String API_URL = "http://192.168.1.179:3008/auth";
 
     private static final OkHttpClient client = new OkHttpClient().newBuilder()
             .connectTimeout(10, TimeUnit.SECONDS)

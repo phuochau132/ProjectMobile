@@ -19,7 +19,9 @@ import android.widget.Toast;
 
 import com.example.project.R;
 import com.example.project.adapter.AdapterProfile;
+import com.example.project.api.SongAPI;
 import com.example.project.cache.UserCache;
+import com.example.project.event.CallbackAPI;
 import com.example.project.model.Subject;
 
 import org.json.JSONException;
@@ -109,6 +111,32 @@ public class ProfileFragment extends Fragment {
             }
         });
 
+        view.findViewById(R.id.btn_manager).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                try {
+                    SongAPI.getSongByUsername(UserCache.getUser(view.getContext()), new CallbackAPI() {
+                        @Override
+                        public <T> void callback(T data) {
+                            ArrayList<Subject> subjects = (ArrayList<Subject>) data;
+                            ManagerFragment managerFragment = new ManagerFragment();
+                            Bundle bundle = new Bundle();
+                            bundle.putSerializable("subjects", subjects);
+                            managerFragment.setArguments(bundle);
+                            FragmentManager fragmentManager = requireActivity().getSupportFragmentManager();
+                            FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+                            fragmentTransaction.replace(R.id.container, managerFragment).addToBackStack(null);
+                            fragmentTransaction.commit();
+                        }
+                    });
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                } catch (JSONException e) {
+                    throw new RuntimeException(e);
+                }
+
+            }
+        });
 
         client = new OkHttpClient();
         ucache = new UserCache();

@@ -18,15 +18,24 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.example.project.R;
+import com.example.project.api.SongAPI;
+import com.example.project.cache.SongCache;
 import com.example.project.cache.UserCache;
+import com.example.project.event.CallbackAPI;
 import com.example.project.fragment.HomeFragment;
 import com.example.project.fragment.HistoryFragment;
 import com.example.project.fragment.Login;
 import com.example.project.fragment.ProfileFragment;
 import com.example.project.fragment.UploadFragment;
+import com.example.project.model.Subject;
 import com.example.project.service.ProcessBar;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+
+import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
     BottomNavigationView bottomNavigationView;
@@ -72,8 +81,11 @@ public class MainActivity extends AppCompatActivity {
                         return true;
 
                     case R.id.lib:
-                        HistoryFragment libFragment = new HistoryFragment();
-                        getSupportFragmentManager().beginTransaction().replace(R.id.container, libFragment).addToBackStack(null).commit();
+                        try {
+                            initListMusic();
+                        } catch (JSONException e) {
+
+                        }
                         return true;
                     case R.id.profile:
                         String token = UserCache.getToken(getApplicationContext());
@@ -95,7 +107,32 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
+    public void getHistory(){
 
+    }
+    public void initListMusic() throws JSONException {
+        JSONArray dataInput= SongCache.getAllMusic(this);
+//        for (int i = 0; i <data.length(); i++) {
+//            try {
+//                String tmp = data.getString(i);
+//                Subject song= SongAPI.getInfoSong(tmp);
+//                listMusic.add(song);
+//            } catch (JSONException e) {
+//                e.printStackTrace();
+//            }
+//        }
+        SongAPI.getInfoSong(dataInput, new CallbackAPI() {
+            @Override
+            public <T> void callback(T data)  {
+                HistoryFragment historyFragment = new HistoryFragment();
+                Bundle bundle = new Bundle();
+                bundle.putSerializable("listMusic", (ArrayList<Subject>) data);
+                System.out.println("sdsdsd" +  ((ArrayList<?>) data).size());
+                historyFragment.setArguments(bundle);
+                getSupportFragmentManager().beginTransaction().replace(R.id.container, historyFragment).addToBackStack(null).commit();
+            }
+        });
+    }
     public void checkShowMiniControl() {
         if (!ProcessBar.url.equals("")) {
             miniControl.setVisibility(View.VISIBLE);
